@@ -1,0 +1,44 @@
+Companies
+  ├──< Users
+  ├──< Tickets
+  └──< KnowledgeBase
+
+Users
+  ├──< Sessions
+  ├──< Tickets (customerId)
+  ├──< Tickets (assignedTo)
+  ├──< Messages (senderId)
+  ├──< Feedback (agentId)
+  └──< Logs
+
+Tickets
+  ├──< Messages
+  └──< Feedback
+
+
+// the refined verion
+Company 
+  ├──< User
+  ├──< Ticket
+  └──< KnowledgeBase
+
+User 
+  ├──< Session
+  ├──< Ticket (customerId)
+  ├──< Ticket (assignedTo)
+  ├──< Message (senderId)
+  ├──< Feedback (agentId)
+  ├──< Log
+  └──< Attachment
+
+Ticket 
+  ├──< Message
+  ├──< Feedback
+  └──< Attachment
+
+Message 
+  └──< Attachment
+
+Feedback → belongs to Ticket, Agent(User)
+KnowledgeBase → belongs to Company
+

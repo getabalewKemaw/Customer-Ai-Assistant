@@ -1,0 +1,9 @@
+Users 
+  ├──< Sessions
+  ├──< Tickets (as customerId)
+  ├──< Tickets (as assignedTo)
+  └──< Messages (as senderId)
+
+Tickets
+  ├──< Messages
+  └──< Feedback

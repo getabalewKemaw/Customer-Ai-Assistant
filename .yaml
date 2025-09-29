@@ -1,0 +1,15 @@
+gemini-bot-backend/
+│── src/
+│   ├── index.js          # Entry point
+│   ├── routes/
+│   │    └── chatRoutes.js
+│   ├── controllers/
+│   │    └── chatController.js
+│   ├── config/
+│   │    └── gemini.js
+│   ├── middleware/
+│   │    └── errorHandler.js
+│   └── utils/
+│        └── logger.js
+│── package.json
+│── .env
