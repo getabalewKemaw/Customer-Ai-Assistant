@@ -1,9 +1,6 @@
-// src/models/User.js
-
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dotenv from 'dotenv';
-
 import validator from "validator";
 dotenv.config();
 
@@ -58,19 +55,19 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 
 // Pre-save: hash password if modified
-// userSchema.pre('save', async function (next) {
-//   if (this.isModified('password') && this.password) {
-//     const salt = await bcrypt.genSalt(SALT_ROUNDS);
-//     this.password = await bcrypt.hash(this.password, salt);
-//   }
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password') && this.password) {
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 
-//   // Ensure authMethods has unique values
-//   if (Array.isArray(this.authMethods)) {
-//     this.authMethods = Array.from(new Set(this.authMethods));
-//   }
+  // Ensure authMethods has unique values
+  if (Array.isArray(this.authMethods)) {
+    this.authMethods = Array.from(new Set(this.authMethods));
+  }
 
-//   next();
-// });
+  next();
+});
 
 // Instance method: compare password
 userSchema.methods.comparePassword = async function (candidatePassword) {

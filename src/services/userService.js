@@ -1,32 +1,27 @@
-// Simple in-memory user store for now — replace with MongoDB later.
-import {User }from "../models/User.js";
-const users = new Map(); // key = googleId
-export const findOrCreateUser = async (profile, tokens = {}) => {
-  // profile: { sub, email, name, picture }
-  const googleId = profile.sub || profile.sub;
-  const existing = users.get(googleId);
-  if (existing) {
-    // update tokens or lastSeen if needed
-    existing.lastSeen = new Date();
-    if (tokens.refresh_token) existing.refreshToken = tokens.refresh_token;
-    users.set(googleId, existing);
-    return existing;
-  }
+import User from "../models/User.js"; // Corrected import (was {User } with space)
 
-  const newUser = {
-    id: googleId,
-    googleId,
+export const findOrCreateUser = async (profile, tokens = {}) => {
+  // Use the model's static method for Google consistency
+  const user = await User.findOrCreateByGoogle({
+    googleId: profile.sub,
     email: profile.email,
     name: profile.name,
-    picture: profile.picture,
-    createdAt: new Date(),
-    refreshToken: tokens.refresh_token || null,
-  };
-  users.set(googleId, newUser);
-  return newUser;
-}; 
-export const findUserById = async (id) => users.get(id) || null;
+    profilePicture: profile.picture,
+    emailVerified: profile.email_verified, // Assume profile has this; adjust if needed
+  });
 
+  // Update tokens or lastSeen if needed
+  user.lastLogin = new Date(); // Using lastLogin from schema
+  if (tokens.refresh_token) {
+    // If you need to store refreshToken, add a field to schema; skipping for now
+  }
+  await user.save();
+  return user;
+};
+
+export const findUserById = async (id) => {
+  return User.findById(id);
+};
 
 export const findUserByEmail = async (email) => {
   return User.findOne({ email });

@@ -1,4 +1,6 @@
 // connect to the mongo db
+// later on for deployment #MONGO_URI=mongodb+srv://GechAi:12344321@gech.l9mrbjs.mongodb.net/?retryWrites=true&w=majority&appName=GeCH use these mongo uri
+// MONGO-URI=MONGO_URI=mongodb+srv://GechAi:12344321@gech.l9mrbjs.mongodb.net/?retryWrites=true&w=majority&appName=GeCH
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
