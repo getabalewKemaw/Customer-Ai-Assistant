@@ -3,6 +3,7 @@ import { signup, login, logoutLocal } from "../controllers/localAuthController.j
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { me } from "../controllers/authController.js"; // reuse "me" endpoint
 
+
 const router = express.Router();
 
 router.post("/signup", signup);

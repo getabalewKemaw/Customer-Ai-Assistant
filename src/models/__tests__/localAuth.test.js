@@ -1,6 +1,7 @@
 // src/controllers/__tests__/localAuth.test.js
 import request from "supertest";
 import app from "../../index.js"; // your express app
+import mongoose from "mongoose";
 import {User} from "../../models/User.js";
 
 beforeEach(async () => {
@@ -56,3 +57,6 @@ describe("Local Auth", () => {
   });
 });
 
+afterAll(async () => {
+  await mongoose.connection.close();
+});
