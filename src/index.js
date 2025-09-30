@@ -7,6 +7,8 @@ import authRoutes from "./routes/authRoutes.js";
 import localAuthRoutes from "./routes/localAuthRoutes.js";
 import SessionRoutes from './routes/SessionRoutes.js'
 import connectDB from "./config/db.js";
+import ticketRoutes from "./routes/ticketRoutes.js";
+
 import { refresh } from './controllers/tokenControllers.js';
 import { requestLogger } from "./utils/logger.js";
 dotenv.config();
@@ -20,9 +22,11 @@ app.use("/api/chat", chatRoutes);
 app.use("/auth-local", localAuthRoutes);
 app.post('/auth/refresh', refresh); // This was missing, causing 404
 app.use("session",SessionRoutes);
+// Routes for the ticket 
+app.use("/api", ticketRoutes);
 
 
-// Error handler middleware (place last)
+
 
 
 app.use(errorHandler);

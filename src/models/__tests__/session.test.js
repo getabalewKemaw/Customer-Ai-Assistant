@@ -76,10 +76,6 @@ describe('Session Model', () => {
         // Old invalid
         let validated = await Session.validateRefreshToken(oldRefresh, userId);
         expect(validated).toBeNull(); // will now pass because old hash no longer matches
-
-
-
-       // New valid
         validated = await Session.validateRefreshToken(newRefresh, userId);
         expect(validated).not.toBeNull(); 
     });
