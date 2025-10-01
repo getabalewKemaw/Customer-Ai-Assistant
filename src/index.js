@@ -8,11 +8,12 @@ import localAuthRoutes from "./routes/localAuthRoutes.js";
 import SessionRoutes from './routes/SessionRoutes.js'
 import connectDB from "./config/db.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
-
 import { refresh } from './controllers/tokenControllers.js';
 import { requestLogger } from "./utils/logger.js";
+import { initAIUser } from "./init/aiUser.js";
+
 dotenv.config();
-connectDB();
+
 const app = express();
 app.use(express.json());
 app.use(requestLogger);
@@ -20,24 +21,28 @@ app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/auth-local", localAuthRoutes);
-app.post('/auth/refresh', refresh); // This was missing, causing 404
+app.post('/auth/refresh', refresh); 
 app.use("session",SessionRoutes);
-// Routes for the ticket 
 app.use("/api", ticketRoutes);
-
-
-
-
-
 app.use(errorHandler);
+const startServer = async () => {
+  await connectDB();           // ensure DB is ready
+  await initAIUser();          // create AI user if not exists
+
+ 
+};
+
+startServer();
+
 const PORT = process.env.PORT || 3000;
 app.get("/",(req,res)=>{
   res.send("Ai bot is running ");
 });
 app.listen(PORT, () => {
   console.log(` Server running on http://localhost:${PORT}`);
-  
 });
 export default app;
+
+
 
 

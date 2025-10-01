@@ -1,5 +1,12 @@
 import ai from "../config/gemini.js";
 import fetch from "node-fetch";
+import Message from "../models/Message.js";
+import { getAIUserId } from "../init/aiUser.js";
+
+// When saving AI reply
+
+
+
 export const generateText = async (req, res, next) => {
   try {
     const { prompt } = req.body;
@@ -11,6 +18,13 @@ export const generateText = async (req, res, next) => {
       model: "gemini-2.0-flash-001",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
     });
+    const aiReply = new Message({
+  content: response.text,
+  senderId: getAIUserId(), // always AI Assistant
+  isAIGenerated: true,
+});
+await aiReply.save();
+
 
     res.json({
       success: true,
