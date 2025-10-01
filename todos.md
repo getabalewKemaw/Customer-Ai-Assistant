@@ -78,6 +78,8 @@ Schema (MVP fields):
 👉 Why minimal?
 •	Core chat functionality (AI + customer + agent).
 •	Attachments, read receipts, etc. can come later.
+
+
 ________________________________________
 6. KnowledgeBase Collection
 Purpose: AI reference material.
