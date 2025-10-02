@@ -1,4 +1,4 @@
-// # /auth/google, /auth/google/callback, /auth/logout, /auth/me
+
 import { oauth2Client } from "../config/googleOAuth.js";
 import { signToken } from "../utils/jwt.js";
 import { addToBlacklist } from "../utils/tokenBlacklist.js";
