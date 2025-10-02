@@ -1,7 +1,5 @@
 import User from "../models/User.js";  // adjust path if needed
-
 let aiUserId = null;
-
 export const initAIUser = async () => {
   try {
     // Check if AI user already exists

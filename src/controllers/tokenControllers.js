@@ -1,5 +1,4 @@
-// src/controllers/tokenController.js
-// Also update newRefreshToken to use { refresh: true }
+
 import { signToken, verifyToken } from '../utils/jwt.js';
 import Session from '../models/Session.js';
 
@@ -68,3 +67,6 @@ export const revokeSession = async (req, res, next) => {
     next(err);
   }
 };
+
+
+

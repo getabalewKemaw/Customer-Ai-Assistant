@@ -26,8 +26,6 @@ export const createTicket = async (req, res) => {
     res.status(400).json({ success: false, error: err.message });
   }
 };
-
-// Fetch a ticket + paginated messages
 export const getTicketWithMessages = async (req, res) => {
   try {
     const { id } = req.params;
@@ -55,88 +53,81 @@ export const getTicketWithMessages = async (req, res) => {
     res.status(400).json({ success: false, error: err.message });
   }
 };
-
-// Post a message to a ticket
-// Post a message to a ticket (human + AI auto-reply)
 export const postMessage = async (req, res) => {
   try {
-    const { id } = req.params; // ticketId
+    const { id } = req.params; 
     const { content } = req.body;
-
-    const ticket = await Ticket.findById(id);
-    if (!ticket) {
-      return res.status(404).json({ success: false, error: "Ticket not found" });
-    }
-
-    // Save user’s message
     const userMessage = await Message.create({
       ticketId: id,
       senderId: req.user.id,
       content,
       isAIGenerated: false,
     });
-
-    // === Call Gemini for AI reply ===
     let aiMessage = null;
-    try {
+    const aiUser = await User.findOne({ role: "agent", name: "AI Assistant" });
+
+    if (aiUser) {
       const response = await ai.models.generateContent({
         model: "gemini-2.0-flash-001",
         contents: [{ role: "user", parts: [{ text: content }] }],
       });
-
-      const aiReply = response.text || "I'm here to assist you.";
-
-      // Save AI message linked to the same ticket
       aiMessage = await Message.create({
         ticketId: id,
-        senderId: req.user.id, // optional: you can create a "system user" for AI
-        content: aiReply,
+        senderId: aiUser._id,
+        content: response.text,
         isAIGenerated: true,
       });
-    } catch (aiError) {
-      console.error("AI reply failed:", aiError.message);
     }
-
     res.status(201).json({
       success: true,
       data: {
         userMessage,
-        aiMessage,
+        aiMessage, 
       },
     });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
 };
-
-
-
-
-
-// Update ticket (assign agent, update status)
 export const updateTicket = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, assignedTo } = req.body;
-    const ticket = await Ticket.findById(id);
-    if (!ticket) return res.status(404).json({ success: false, error: "Ticket not found" });
+    const { title, description } = req.body;
 
-    if (status) ticket.status = status;
+    const ticket = await Ticket.findByIdAndUpdate(
+      id,
+      { title, description },
+      { new: true }
+    );
 
-    if (assignedTo) {
-      const user = await User.findById(assignedTo);
-      if (!user || user.role !== "agent") {
-        return res.status(400).json({ success: false, error: "Assigned user must be an agent" });
-      }
-      ticket.assignedTo = assignedTo;
+    if (!ticket) {
+      return res.status(404).json({ success: false, error: "Ticket not found" });
     }
 
-    await ticket.save();
+    // if description changed → generate AI reply
+    if (description) {
+      const aiUser = await User.findOne({ role: "agent", name: "AI Assistant" });
+      if (aiUser) {
+        const response = await ai.models.generateContent({
+          model: "gemini-2.0-flash-001",
+          contents: [{ role: "user", parts: [{ text: description }] }],
+        });
+
+        await Message.create({
+          ticketId: ticket._id,
+          senderId: aiUser._id,
+          content: response.text,
+          isAIGenerated: true,
+        });
+      }
+    }
+
     res.json({ success: true, data: ticket });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
 };
+
 
 
 

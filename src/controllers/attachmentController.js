@@ -47,10 +47,6 @@ export const uploadAttachment = async (req, res) => {
   }
 }
 
-
-
-
-
 export const getAttachment = async (req, res) => {
   try {
     const { id } = req.params;
