@@ -2,6 +2,7 @@ import Ticket from "../models/Ticket.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js"; 
 import ai from "../config/gemini.js";
+import {sendAITextReply} from "../utils/aiReply.js"
 export const createTicket = async (req, res) => {
   try {
     const { title, description, priority } = req.body;
@@ -14,6 +15,12 @@ export const createTicket = async (req, res) => {
       companyId: req.user.companyId || null,
     });
   await ticket.save();
+   if (description) {
+      sendAITextReply({ ticketId: ticket._id, prompt: description });
+    }
+
+
+
     res.status(201).json({ success: true, data: ticket });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -130,3 +137,8 @@ export const updateTicket = async (req, res) => {
     res.status(400).json({ success: false, error: err.message });
   }
 };
+
+
+
+
+
