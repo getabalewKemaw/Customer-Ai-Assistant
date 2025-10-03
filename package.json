@@ -16,6 +16,7 @@
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.6",
     "supertest": "^7.1.4",
     "validator": "^13.15.15",
     "winson": "^1.0.0"
