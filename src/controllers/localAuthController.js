@@ -4,7 +4,11 @@ import { signToken, verifyToken } from "../utils/jwt.js";
 import { findUserByEmail, createUser } from "../services/userService.js";
 import { addToBlacklist } from "../utils/tokenBlacklist.js";
 import Session from '../models/Session.js';
+import { transporter } from "../config/email.js";
 
+
+import dotenv from 'dotenv';
+dotenv.config();
 const REFRESH_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export const signup = async (req, res, next) => {
@@ -27,6 +31,7 @@ export const signup = async (req, res, next) => {
 
     const deviceInfo = JSON.stringify({ userAgent: req.headers['user-agent'], ip: req.ip });
     await Session.createSession(user.id, refreshToken, deviceInfo, REFRESH_EXPIRY_SECONDS);
+    const url = `${process.env.FRONTEND_URL}/verify-email?token=${accessToken}`;
 
     const cookieOptions = {
       httpOnly: true,
@@ -36,8 +41,19 @@ export const signup = async (req, res, next) => {
     };
     res.cookie('token', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: REFRESH_EXPIRY_SECONDS * 1000 });
-
-    res.status(201).json({ success: true, user: { id: user.id, email: user.email, name: user.name }, accessToken, refreshToken });
+    await transporter.sendMail({
+      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: "Verify Your Email",
+      html: `<p>Hello ${user.name},</p>
+             <p>Thank you for signing up! Please click the link below to verify your email:</p>
+             <a href="${url}">Verify Email</a>
+             <p>This link expires in 24 hours.</p>`,
+    });
+    res.status(201).json({ success: true, 
+      message: "Signup successful! Please check your email to verify your account.",
+      
+      user: { id: user.id, email: user.email, name: user.name }, accessToken, refreshToken });
   } catch (err) {
     next(err);
   }
@@ -96,3 +112,22 @@ export const logoutLocal = async (req, res) => {
   res.clearCookie('refreshToken');
   res.json({ success: true, message: 'Logged out' });
 };
+
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).send("Token is missing");
+
+    const payload = verifyVerificationToken(token);
+    const user = await findUserByEmail(payload.email);
+    if (!user) return res.status(404).send("User not found");
+
+    user.verified = true; // mark verified
+    await user.save();
+
+    res.send("Email verified successfully! You can now login.");
+  } catch (err) {
+    res.status(400).send("Invalid or expired token");
+  }
+};
+
