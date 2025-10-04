@@ -5,12 +5,9 @@ import { findUserByEmail, createUser } from "../services/userService.js";
 import { addToBlacklist } from "../utils/tokenBlacklist.js";
 import Session from '../models/Session.js';
 import { transporter } from "../config/email.js";
-
-
 import dotenv from 'dotenv';
 dotenv.config();
 const REFRESH_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
-
 export const signup = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
@@ -26,7 +23,7 @@ export const signup = async (req, res, next) => {
 
     const user = await createUser({ email, password, name, authMethods: ['email'] });
 
-    const accessToken = signToken({ id: user.id, email: user.email }, '15m');
+    const accessToken = signToken({ id: user.id, email: user.email }, '1d');
     const refreshToken = signToken({ id: user.id }, '7d', { refresh: true }); // Add { refresh: true }
 
     const deviceInfo = JSON.stringify({ userAgent: req.headers['user-agent'], ip: req.ip });
@@ -42,7 +39,7 @@ export const signup = async (req, res, next) => {
     res.cookie('token', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: REFRESH_EXPIRY_SECONDS * 1000 });
     await transporter.sendMail({
-      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+      from: `"Supportlly -" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Verify Your Email",
       html: `<p>Hello ${user.name},</p>
@@ -118,15 +115,17 @@ export const verifyEmail = async (req, res) => {
     const { token } = req.query;
     if (!token) return res.status(400).send("Token is missing");
 
-    const payload = verifyVerificationToken(token);
+    const payload = verifyToken(token);
     const user = await findUserByEmail(payload.email);
     if (!user) return res.status(404).send("User not found");
 
-    user.verified = true; // mark verified
+    if (user.isVerified) {
+      return res.json({ success: true, message: "Email already verified" });
+    }
+    user.isVerified = true; 
     await user.save();
 
-    res.send("Email verified successfully! You can now login.");
-  } catch (err) {
+    return res.json({ success: true, message: "Email verified successfully" });  } catch (err) {
     res.status(400).send("Invalid or expired token");
   }
 };
