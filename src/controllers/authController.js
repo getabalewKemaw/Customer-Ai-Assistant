@@ -57,7 +57,7 @@ export const googleCallback = async (req, res, next) => {
     }, tokens);
 
     // 5️⃣ Sign your own JWT for your app
-    const token = signToken({ id: user.id, email: user.email, name: user.name });
+    const token = signToken({ id: user.id, email: user.email, name: user.name },"7d");
     // 6️⃣ Set JWT as HttpOnly cookie (secure & production-ready)
     res.cookie("token", token, {
       httpOnly: true,

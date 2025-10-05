@@ -1,5 +1,3 @@
-// src/controllers/localAuthController.js
-// Update refreshToken generation to use { refresh: true }
 import { signToken, verifyToken } from "../utils/jwt.js";
 import { findUserByEmail, createUser } from "../services/userService.js";
 import { addToBlacklist } from "../utils/tokenBlacklist.js";
@@ -11,18 +9,14 @@ const REFRESH_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 export const signup = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
-
     if (!email || !password || !name) {
       return res.status(400).json({ success: false, error: "All fields are required" });
     }
-
     const existing = await findUserByEmail(email);
     if (existing) {
       return res.status(400).json({ success: false, error: "Email already registered please login" });
     }
-
     const user = await createUser({ email, password, name, authMethods: ['email'] });
-
     const accessToken = signToken({ id: user.id, email: user.email }, '1d');
     const refreshToken = signToken({ id: user.id }, '7d', { refresh: true }); // Add { refresh: true }
 
@@ -45,11 +39,11 @@ export const signup = async (req, res, next) => {
       html: `<p>Hello ${user.name},</p>
              <p>Thank you for signing up! Please click the link below to verify your email:</p>
              <a href="${url}">Verify Email</a>
-             <p>This link expires in 24 hours.</p>`,
+             <p>This link expires in 24 hours.</p>
+             p>Supportlly-Team[GK].</p>`,
     });
     res.status(201).json({ success: true, 
       message: "Signup successful! Please check your email to verify your account.",
-      
       user: { id: user.id, email: user.email, name: user.name,role:user.role }, accessToken, refreshToken });
   } catch (err) {
     next(err);
@@ -60,17 +54,14 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await findUserByEmail(email);
-
     if (!user) {
       return res.status(401).json({ success: false, error: "Invalid credentials" });
     }
-
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ success: false, error: "Invalid credentials" });
     }
-
-    const accessToken = signToken({ id: user.id, email: user.email }, '15m');
+    const accessToken = signToken({ id: user.id, email: user.email }, '7d');
     const refreshToken = signToken({ id: user.id }, '7d', { refresh: true }); // Add { refresh: true }
 
     const deviceInfo = JSON.stringify({ userAgent: req.headers['user-agent'], ip: req.ip });
@@ -90,8 +81,6 @@ export const login = async (req, res, next) => {
     next(err);
   }
 };
-
-// Logout remains the same
 export const logoutLocal = async (req, res) => {
   const token = req.cookies?.token;
   if (token) {
@@ -129,10 +118,6 @@ export const verifyEmail = async (req, res) => {
     res.status(400).send("Invalid or expired token");
   }
 };
-
-
-
-// controllers/localAuthController.js
 export const me = async (req, res) => {
   try {
     const id = req.user?.id; // decoded from JWT in cookie by middleware
