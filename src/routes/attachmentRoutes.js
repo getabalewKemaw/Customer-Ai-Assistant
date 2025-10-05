@@ -19,9 +19,7 @@ const router = express.Router();
 
 // Upload endpoint (file or URL)
 router.post("/tickets/:id/attachments", requireAuth, upload.single("file"), uploadAttachment);
-
 // Get metadata
 router.get("/tickets/attachments/:id", requireAuth, getAttachment);
-
 export default router;
 

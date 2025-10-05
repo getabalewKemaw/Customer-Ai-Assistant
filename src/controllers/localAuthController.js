@@ -50,7 +50,7 @@ export const signup = async (req, res, next) => {
     res.status(201).json({ success: true, 
       message: "Signup successful! Please check your email to verify your account.",
       
-      user: { id: user.id, email: user.email, name: user.name }, accessToken, refreshToken });
+      user: { id: user.id, email: user.email, name: user.name,role:user.role }, accessToken, refreshToken });
   } catch (err) {
     next(err);
   }
@@ -85,7 +85,7 @@ export const login = async (req, res, next) => {
     res.cookie('token', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: REFRESH_EXPIRY_SECONDS * 1000 });
 
-    res.json({ success: true, user: { id: user.id, email: user.email, name: user.name }, accessToken, refreshToken });
+    res.json({ success: true, user: { id: user.id, email: user.email, name: user.name,role:user.role }, accessToken, refreshToken });
   } catch (err) {
     next(err);
   }
@@ -129,4 +129,23 @@ export const verifyEmail = async (req, res) => {
     res.status(400).send("Invalid or expired token");
   }
 };
+
+
+
+// controllers/localAuthController.js
+export const me = async (req, res) => {
+  try {
+    const id = req.user?.id; // decoded from JWT in cookie by middleware
+    if (!id) return res.status(401).json({ success: false, error: "Not authenticated" });
+
+    const user = await findUserById(id);
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
+
+    res.json({ success: true, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+
 
