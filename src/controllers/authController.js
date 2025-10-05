@@ -70,7 +70,7 @@ export const googleCallback = async (req, res, next) => {
     res.clearCookie("oauth_state");
 
     // 8️⃣ Redirect to frontend (no token in URL)
-    res.redirect(FRONTEND_URL + "?login=success");
+    res.redirect(FRONTEND_URL + "/oauth-success");
 
     // ✅ Optional: For API clients, you could also return JSON:
     // res.json({ success: true, token, user });
