@@ -3,9 +3,10 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; // Add this import
 
-import dotenv from  'dotenv'
+import dotenv from  'dotenv';
+console.log("JWT_SECRET loaded:", process.env.JWT_SECRET ? `Set (length: ${process.env.JWT_SECRET.length})` : "NOT SET");
 dotenv.config();
-export const signToken = (payload, expiresIn = '15m', options = {}) => {
+export const signToken = (payload, expiresIn = '7d', options = {}) => {
   const tokenPayload = { ...payload };
   if (options.refresh) {
     tokenPayload.jti = crypto.randomBytes(16).toString('hex'); // Unique ID for refresh tokens

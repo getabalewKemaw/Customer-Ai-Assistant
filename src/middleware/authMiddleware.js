@@ -38,6 +38,15 @@ export const requireAuth = async (req, res, next) => {
 
     next();
   } catch (err) {
-    return res.status(401).json({ success: false, error: "Invalid or expired token" });
+    console.error("Auth error:", {
+    name: err.name,       // e.g., 'JsonWebTokenError'
+    message: err.message, // e.g., 'invalid signature'
+    expiredAt: err.expiredAt || 'N/A' // For expiration details
+  });
+  let errorMsg = "Invalid or expired token";
+  if (err.name === 'TokenExpiredError') errorMsg = "Token expired";
+  else if (err.name === 'JsonWebTokenError') errorMsg = "Invalid token";
+  return res.status(401).json({ success: false, error: errorMsg });
+    //return res.status(401).json({ success: false, error: "Invalid or expired token" });
   }
 };

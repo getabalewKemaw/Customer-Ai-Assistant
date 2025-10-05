@@ -2,7 +2,6 @@ import Attachment from "../models/Attachment.js";
 import { sendAIImageReply } from "../utils/aiReply.js";
 import path from "path";
 import fs from "fs";
-
 export const uploadAttachment = async (req, res) => {
   try {
     const { id } = req.params; // ticket or message id

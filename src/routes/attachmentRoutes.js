@@ -7,19 +7,15 @@ import { uploadAttachment, getAttachment } from "../controllers/attachmentContro
 // Configure multer for local uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, "uploads");
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   },
 });
 const upload = multer({ storage });
-
 const router = express.Router();
-
-// Upload endpoint (file or URL)
-router.post("/tickets/:id/attachments", requireAuth, upload.single("file"), uploadAttachment);
-// Get metadata
-router.get("/tickets/attachments/:id", requireAuth, getAttachment);
+router.post("/tickets/:id/attachments", upload.single("file"),requireAuth, uploadAttachment);
+router.get("/tickets/attachments/:id", requireAuth,getAttachment);
 export default router;
 

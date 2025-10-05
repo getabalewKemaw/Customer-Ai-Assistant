@@ -129,6 +129,35 @@ export const updateTicket = async (req, res) => {
 };
 
 
+export const getUserTickets = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Find tickets for the logged-in user
+    const tickets = await Ticket.find({ customerId: req.user.id })
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const totalTickets = await Ticket.countDocuments({ customerId: req.user.id });
+
+    res.json({
+      success: true,
+      data: {
+        tickets,
+        totalTickets,
+        page: parseInt(page),
+        limit: parseInt(limit),
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+
+
 
 
 
