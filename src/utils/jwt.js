@@ -1,11 +1,17 @@
 // src/utils/jwt.js
 // Updated to add optional jti for refresh tokens to ensure uniqueness
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto'; // Add this import
+import crypto from 'crypto';
+import dotenv from 'dotenv';
 
-import dotenv from  'dotenv';
-console.log("JWT_SECRET loaded:", process.env.JWT_SECRET ? `Set (length: ${process.env.JWT_SECRET.length})` : "NOT SET");
+// Load environment variables before using them
 dotenv.config();
+
+// Optional debug log (avoid leaking secret contents)
+if (!process.env.JWT_SECRET) {
+  // Fail fast to make auth errors explicit in dev
+  console.error("JWT_SECRET is NOT SET. Set it in your environment or .env file.");
+}
 export const signToken = (payload, expiresIn = '7d', options = {}) => {
   const tokenPayload = { ...payload };
   if (options.refresh) {
