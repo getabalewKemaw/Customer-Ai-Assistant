@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 const router = express.Router();
-router.post("/tickets/:id/attachments", upload.single("file"),requireAuth, uploadAttachment);
+router.post("/tickets/:id/attachments",requireAuth , upload.single("file"), uploadAttachment);
 router.get("/tickets/attachments/:id", requireAuth,getAttachment);
 export default router;
 

@@ -5,11 +5,13 @@ import User from "../models/User.js";
 
 export const requireAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    const authHeader = req.headers.authorization || req.headers.Authorization;
     let token = null;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
+    if (authHeader && typeof authHeader === 'string' && authHeader.startsWith("Bearer ")) {
       token = authHeader.split(" ")[1];
+    } else if (req.headers['x-access-token']) {
+      token = req.headers['x-access-token'];
     } else if (req.cookies?.token) {
       token = req.cookies.token;
     }

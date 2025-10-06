@@ -22,9 +22,12 @@ app.use(requestLogger);
 app.use(cookieParser());
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5174", // your frontend
-  credentials: true, // allow cookies
+  origin: process.env.FRONTEND_URL || "http://localhost:5174",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
 
 app.use("/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
