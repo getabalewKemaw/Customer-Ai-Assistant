@@ -11,9 +11,8 @@ const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
-router.post("/logout", logoutLocal);
 router.get("/me", requireAuth, me);
 router.get("/verify-email", verifyEmail);
-
+router.post("/logout", logoutLocal);
 export default router;
 
