@@ -3,11 +3,13 @@ import { oauth2Client } from "../config/googleOAuth.js";
 import { signToken } from "../utils/jwt.js";
 import { addToBlacklist } from "../utils/tokenBlacklist.js";
 import { findOrCreateUser, findUserById } from "../services/userService.js";
+import  Session  from "../models/Session.js";
 import dotenv from "dotenv";
 import crypto from "crypto";
 dotenv.config();
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5174";
-
+//const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const REFRESH_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 // 1) Redirect user to Google consent screen (GET /auth/google)
 export const redirectToGoogle = (req, res) => {
   // generate a random state to protect against CSRF attacks
@@ -32,23 +34,21 @@ export const googleCallback = async (req, res, next) => {
     const { code, state } = req.query;
     const savedState = req.cookies?.oauth_state;
 
-    // 1️⃣ Verify OAuth state to prevent CSRF
     if (!state || !savedState || state !== savedState) {
       return res.status(400).json({ success: false, error: "Invalid OAuth state" });
     }
 
-    // 2️⃣ Exchange code for tokens
+    // Exchange code for tokens
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
-    // 3️⃣ Verify ID token from Google
     const ticket = await oauth2Client.verifyIdToken({
       idToken: tokens.id_token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
-    const payload = ticket.getPayload(); // { sub, email, name, picture, ... }
+    const payload = ticket.getPayload();
 
-    // 4️⃣ Create or update user in database
+    // Create or update user
     const user = await findOrCreateUser({
       sub: payload.sub,
       email: payload.email,
@@ -56,24 +56,29 @@ export const googleCallback = async (req, res, next) => {
       picture: payload.picture,
     }, tokens);
 
-    // 5️⃣ Sign your own JWT for your app
-    const token = signToken({ id: user.id, email: user.email, name: user.name },"7d");
-    // 6️⃣ Set JWT as HttpOnly cookie (secure & production-ready)
-    res.cookie("token", token, {
+    // Create app tokens
+    const accessToken = signToken({ id: user.id, email: user.email, name: user.name }, "15m");
+    const refreshToken = signToken({ id: user.id }, "7d", { refresh: true });
+
+    // Store refresh token in DB
+    const deviceInfo = JSON.stringify({ userAgent: req.headers['user-agent'], ip: req.ip });
+    await Session.createSession(user.id, refreshToken, deviceInfo, REFRESH_EXPIRY_SECONDS);
+
+    // Set cookies for both access and refresh tokens
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+      maxAge: REFRESH_EXPIRY_SECONDS * 1000,
+    };
+    res.cookie("token", accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 }); // 15 min
+    res.cookie("refreshToken", refreshToken, cookieOptions);
 
-    // 7️⃣ Clear temporary OAuth state cookie
+    // Clear OAuth state cookie
     res.clearCookie("oauth_state");
 
-    // 8️⃣ Redirect to frontend (no token in URL)
+    // Redirect frontend
     res.redirect(FRONTEND_URL + "/oauth-success");
-
-    // ✅ Optional: For API clients, you could also return JSON:
-    // res.json({ success: true, token, user });
 
   } catch (err) {
     next(err);
