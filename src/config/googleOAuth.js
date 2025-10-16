@@ -13,7 +13,7 @@ export const oauth2Client = new OAuth2Client({
 });
 export const refreshAccessToken = async (refreshToken) => {
   oauth2Client.setCredentials({ refresh_token: refreshToken });
-  const res = await oauth2Client.getAccessToken(); // ensures access token exists/refreshed
+  const res = await oauth2Client.getAccessToken(); 
   return res.token; 
 };
 

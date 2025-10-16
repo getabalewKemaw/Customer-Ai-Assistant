@@ -20,11 +20,13 @@ const app = express();
 app.use(express.json());
 app.use(requestLogger);
 app.use(cookieParser());
+// trust proxy is required so Express knows it's behind a proxy and can set secure cookies correctly
+app.set('trust proxy', 1);
 
 
 const allowedOrigins = [
-  "http://localhost:5173",       // local dev
-  "https://supportlyai.vercel.app" // deployed frontend
+  "http://localhost:5173",       
+  "https://supportlyai.vercel.app" 
 ];
 
 app.use(
