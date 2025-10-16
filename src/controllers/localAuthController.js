@@ -40,7 +40,7 @@ export const signup = async (req, res, next) => {
              <p>Thank you for signing up! Please click the link below to verify your email:</p>
              <a href="${url}">Verify Email</a>
              <p>This link expires in 24 hours.</p>
-             p>Supportlly-Team[GK].</p>`,
+             <p>Supportlly-Team[GK].</p>`,
     });
     res.status(201).json({ success: true, 
       message: "Signup successful! Please check your email to verify your account.",
