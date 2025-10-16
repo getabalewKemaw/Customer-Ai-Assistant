@@ -67,8 +67,8 @@ export const googleCallback = async (req, res, next) => {
     // Set cookies for both access and refresh tokens
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true, // required for SameSite=None on cross-site
+      sameSite: "none",
       maxAge: REFRESH_EXPIRY_SECONDS * 1000,
     };
     res.cookie("token", accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 }); // 15 min
